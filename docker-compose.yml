@@ -1,0 +1,51 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: truong.duy
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: duyserver
+    container_name: duyserver-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ../app/:/var/www
+    networks:
+      - duyserver
+
+  db:
+    image: mysql:8.0
+    container_name: duyserver-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: shop_like_fun
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: password
+      MYSQL_USER: duyserver
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    networks:
+      - duyserver
+
+  nginx:
+    image: nginx:alpine
+    container_name: duyserver-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ../app/:/var/www
+      - ./nginx:/etc/nginx/conf.d/
+    networks:
+      - duyserver
+
+networks:
+  duyserver:
+    driver: bridge
